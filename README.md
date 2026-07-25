@@ -16,7 +16,7 @@ https://page-pulse-fj8w.onrender.com
 
 ## 📂 GitHub Repository
 
-https://github.com/yourusername/page-pulse
+https://github.com/ArchitGupta2004/page-pulse
 
 ---
 
