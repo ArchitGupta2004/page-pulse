@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>URL Audit Service</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="background-shapes">
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+    <div class="shape shape-3"></div>
+  </div>
+
+  <main class="container">
+    <div class="glass-card">
+      <header>
+        <h1>URL Audit Service</h1>
+        <p>Instantly audit any URL for status, title, and response time.</p>
+      </header>
+      
+      <form id="auditForm" class="audit-form" novalidate>
+        <div class="input-group">
+          <input type="url" id="urlInput" placeholder="https://example.com">
+          <button type="submit" id="submitBtn">Audit Now</button>
+        </div>
+      </form>
+
+      <div id="loader" class="loader hidden">
+        <div class="spinner"></div>
+        <span>Auditing URL...</span>
+      </div>
+
+      <div id="resultContainer" class="result-container hidden">
+        <div class="result-card">
+          <h3 id="resTitle">Page Title</h3>
+          <p class="final-url" id="resUrl">https://example.com</p>
+          <div class="metrics">
+            <div class="metric">
+              <span class="label">Status</span>
+              <span class="value" id="resStatus">200</span>
+            </div>
+            <div class="metric">
+              <span class="label">Time</span>
+              <span class="value" id="resTime">150ms</span>
+            </div>
+            <div class="metric">
+              <span class="label">Cached</span>
+              <span class="value" id="resCached">No</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div id="errorContainer" class="error-container hidden">
+        <p id="errorText"></p>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>
+      <a href="https://digitalheroesco.com" target="_blank" rel="noopener noreferrer">
+        Built for Digital Heroes Training Task
+      </a>
+    </p>
+  </footer>
+
+  <script>
+    document.getElementById('auditForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const urlInput = document.getElementById('urlInput').value.trim();
+      const submitBtn = document.getElementById('submitBtn');
+      const loader = document.getElementById('loader');
+      const resultContainer = document.getElementById('resultContainer');
+      const errorContainer = document.getElementById('errorContainer');
+      const errorText = document.getElementById('errorText');
+      
+      resultContainer.classList.add('hidden');
+      errorContainer.classList.add('hidden');
+      
+      if (!urlInput) {
+        errorText.textContent = 'Please enter a valid HTTP or HTTPS URL.';
+        errorContainer.classList.remove('hidden');
+        return;
+      }
+      
+      try {
+        const parsedUrl = new URL(urlInput);
+        if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+          throw new Error('URL must start with http:// or https://');
+        }
+      } catch (err) {
+        errorText.textContent = 'Please enter a valid HTTP or HTTPS URL.';
+        errorContainer.classList.remove('hidden');
+        return;
+      }
+      
+      submitBtn.disabled = true;
+      loader.classList.remove('hidden');
+      
+      try {
+        const response = await fetch('/api/audit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ url: urlInput }),
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.error?.message || 'Something went wrong');
+        }
+        
+        const titleText = data.data.title || 'No Title Found';
+        const titleEl = document.getElementById('resTitle');
+        titleEl.textContent = titleText;
+        titleEl.title = titleText;
+        document.getElementById('resUrl').textContent = data.data.finalUrl;
+        
+        const statusEl = document.getElementById('resStatus');
+        statusEl.textContent = data.data.statusCode;
+        statusEl.className = 'value ' + (data.data.statusCode >= 400 ? 'status-error' : 'status-success');
+        
+        const timeValue = data.data.responseTime;
+        document.getElementById('resTime').textContent = (data.cached && timeValue === 0) ? '<1ms' : `${timeValue}ms`;
+        document.getElementById('resCached').textContent = data.cached ? 'Yes' : 'No';
+        
+        resultContainer.classList.remove('hidden');
+      } catch (error) {
+        errorText.textContent = error.message;
+        errorContainer.classList.remove('hidden');
+      } finally {
+        submitBtn.disabled = false;
+        loader.classList.add('hidden');
+      }
+    });
+  </script>
+</body>
+</html>
