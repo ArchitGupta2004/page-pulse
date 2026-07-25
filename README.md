@@ -10,7 +10,7 @@ This application audits any HTTP/HTTPS URL and returns useful metadata such as H
 
 ## 🌐 Live Demo
 
-https://your-app.onrender.com
+https://page-pulse-fj8w.onrender.com
 
 ---
 
@@ -282,17 +282,7 @@ docker run -p 3000:3000 url-audit-service
 
 ---
 
-# 📸 Application Preview
 
-> Add a screenshot here after deployment.
-
-Example
-
-```
-docs/screenshot.png
-```
-
----
 
 # 📜 Credits
 
